@@ -8,7 +8,7 @@
 ARG CUDA_VERSION=12.4.1
 #################### BASE BUILD IMAGE ####################
 # prepare basic build environment
-FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu20.04 AS base
+FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu22.04 AS base
 
 ARG CUDA_VERSION=12.4.1
 ARG PYTHON_VERSION=3.10
@@ -98,28 +98,28 @@ ARG USE_SCCACHE
 # if USE_SCCACHE is set, use sccache to speed up compilation
 RUN --mount=type=cache,target=/root/.cache/pip \
     if [ "$USE_SCCACHE" = "1" ]; then \
-        echo "Installing sccache..." \
-        && curl -L -o sccache.tar.gz https://github.com/mozilla/sccache/releases/download/v0.8.1/sccache-v0.8.1-x86_64-unknown-linux-musl.tar.gz \
-        && tar -xzf sccache.tar.gz \
-        && sudo mv sccache-v0.8.1-x86_64-unknown-linux-musl/sccache /usr/bin/sccache \
-        && rm -rf sccache.tar.gz sccache-v0.8.1-x86_64-unknown-linux-musl \
-        && if [ "$CUDA_VERSION" = "11.8.0" ]; then \
-            export SCCACHE_BUCKET=vllm-build-sccache-2; \
-           else \
-            export SCCACHE_BUCKET=vllm-build-sccache; \
-           fi \
-        && export SCCACHE_REGION=us-west-2 \
-        && export CMAKE_BUILD_TYPE=Release \
-        && sccache --show-stats \
-        && python3 setup.py bdist_wheel --dist-dir=dist --py-limited-api=cp38 \
-        && sccache --show-stats; \
+    echo "Installing sccache..." \
+    && curl -L -o sccache.tar.gz https://github.com/mozilla/sccache/releases/download/v0.8.1/sccache-v0.8.1-x86_64-unknown-linux-musl.tar.gz \
+    && tar -xzf sccache.tar.gz \
+    && sudo mv sccache-v0.8.1-x86_64-unknown-linux-musl/sccache /usr/bin/sccache \
+    && rm -rf sccache.tar.gz sccache-v0.8.1-x86_64-unknown-linux-musl \
+    && if [ "$CUDA_VERSION" = "11.8.0" ]; then \
+    export SCCACHE_BUCKET=vllm-build-sccache-2; \
+    else \
+    export SCCACHE_BUCKET=vllm-build-sccache; \
+    fi \
+    && export SCCACHE_REGION=us-west-2 \
+    && export CMAKE_BUILD_TYPE=Release \
+    && sccache --show-stats \
+    && python3 setup.py bdist_wheel --dist-dir=dist --py-limited-api=cp38 \
+    && sccache --show-stats; \
     fi
 
 ENV CCACHE_DIR=/root/.cache/ccache
 RUN --mount=type=cache,target=/root/.cache/ccache \
     --mount=type=cache,target=/root/.cache/pip \
     if [ "$USE_SCCACHE" != "1" ]; then \
-        python3 setup.py bdist_wheel --dist-dir=dist --py-limited-api=cp38; \
+    python3 setup.py bdist_wheel --dist-dir=dist --py-limited-api=cp38; \
     fi
 
 # check the size of the wheel, we cannot upload wheels larger than 100MB
@@ -156,7 +156,7 @@ RUN pip --verbose wheel -r requirements-mamba.txt \
 
 #################### vLLM installation IMAGE ####################
 # image with vLLM installed
-FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu20.04 AS vllm-base
+FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu22.04 AS vllm-base
 ARG CUDA_VERSION=12.4.1
 ARG PYTHON_VERSION=3.10
 WORKDIR /vllm-workspace

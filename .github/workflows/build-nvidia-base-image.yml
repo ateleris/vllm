@@ -1,0 +1,17 @@
+name: Build nvidia-base image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build image
+    uses: ./.github/workflows/build-and-upload-image.yml
+    with:
+      actor: ${{ github.actor }}
+      dockerfile: Dockerfile
+      imageTag: latest
+    secrets:
+      ghToken: ${{ secrets.GITHUB_TOKEN }}
